@@ -18,7 +18,6 @@ class No:
         self.itens_selecionados = itens_selecionados
     
     def __lt__(self, outro):
-        # Para PriorityQueue: maior limite = maior prioridade
         # Invertemos a lógica padrão para que a fila priorize o maior valor
         return self.limite > outro.limite
 
@@ -29,24 +28,22 @@ def calcular_limite(no, W, V, itens):
     Assume que podemos pegar frações de itens (Mochila Fracionária).
     NOTA: A lista 'itens' já deve vir ordenada por densidade da função principal.
     """
-    if no.peso > W or no.volume > V:
+    if no.peso > W or no.volume > V: # Caso o peso e volume atuais naquele nó descumpram as restrições, interromper execução
         return 0
     
     limite = no.valor
     peso_atual = no.peso
     volume_atual = no.volume
     
-    # Percorre os itens restantes linearmente (Otimizado: sem reordenar aqui)
-    for i in range(no.nivel, len(itens)):
-        peso_i, volume_i, valor_i = itens[i]
+    # Percorrer os itens restantes linearmente 
+    for i in range(no.nivel, len(itens)): 
+        peso_i, volume_i, valor_i = itens[i] # Peso, volume e valor do item i
         
-        if peso_atual + peso_i <= W and volume_atual + volume_i <= V:
-            # O item cabe inteiro
+        if peso_atual + peso_i <= W and volume_atual + volume_i <= V: # Verifica se o item cabe inteiro
             peso_atual += peso_i
             volume_atual += volume_i
             limite += valor_i
-        else:
-            # O item não cabe inteiro: pega a fração permitida (Relaxamento Linear)
+        else: # O item não cabe inteiro, então pegamos a fração permitida (Relaxamento Linear)
             peso_disponivel = W - peso_atual
             volume_disponivel = V - volume_atual
             
@@ -66,51 +63,7 @@ def calcular_limite(no, W, V, itens):
     
     return limite
 
-
-def mochila_bnb(W, V, itens):
-    """
-    Resolve o problema da mochila 0-1 com duas restrições usando Branch-and-Bound.
-    
-    Args:
-        W: Capacidade máxima de peso
-        V: Capacidade máxima de volume
-        itens: Lista de tuplas (peso, volume, valor)
-        
-    Returns:
-        tuple: (valor_maximo, itens_selecionados, tempo_execucao)
-    """
-    tempo_inicio = time.time()
-    
-    n = len(itens)
-    
-    # 1. PRÉ-PROCESSAMENTO: Ordenação por Densidade (Guloso)
-    # Calcula a razão valor/custo (média entre peso e volume) para cada item
-    itens_com_razao = []
-    for i, (peso, volume, valor) in enumerate(itens):
-        razao_peso = valor / peso if peso > 0 else 0
-        razao_volume = valor / volume if volume > 0 else 0
-        razao = (razao_peso + razao_volume) / 2
-        
-        # Guardamos o índice original 'i' para reconstruir a resposta depois
-        itens_com_razao.append((razao, i, peso, volume, valor))
-    
-    # Ordena do maior para o menor (reverse=True)
-    itens_com_razao.sort(reverse=True)
-    
-    # Cria a lista de itens reordenada e um mapa para recuperar os índices originais
-    itens_ordenados = []
-    mapa_indices = {}
-    
-    for novo_idx, (_, idx_original, peso, volume, valor) in enumerate(itens_com_razao):
-        itens_ordenados.append((peso, volume, valor))
-        mapa_indices[novo_idx] = idx_original
-    
-    # Substituímos a lista original pela ordenada para usar no algoritmo
-    itens = itens_ordenados
-    
-
-    # 1.1. SOLUÇÃO GULOSA
-
+def solucao_inicial(n, W, V, itens):
     peso_g = 0
     volume_g = 0
     valor_g = 0
@@ -126,25 +79,75 @@ def mochila_bnb(W, V, itens):
             solucao_g.append(i) # Guardamos o índice interno (da lista ordenada)
 
     # Inicializamos as variáveis globais com essa solução gulosa
-    # Em vez de começar com 0, já começamos com um valor alto!
+    # Ao invés de começar com 0, já começamos com um valor alto!
     melhor_valor = valor_g
     melhor_solucao = solucao_g[:]
+    return melhor_valor, melhor_solucao
 
 
+def mochila_bnb(W, V, itens):
+    """
+    Resolve o problema da mochila 0-1 com duas restrições usando Branch-and-Bound.
+    
+    Args:
+        W: Capacidade máxima de peso
+        V: Capacidade máxima de volume
+        itens: Lista de tuplas (peso, volume, valor)
+        
+    Returns:
+        tuple: (valor_maximo, itens_selecionados, tempo_execucao)
+    """
+    
+    tempo_inicio = time.time() # Início da medição de tempo 
+    n = len(itens) # Número de itens
+    
+    # 1. PRÉ-PROCESSAMENTO: Ordenação por Densidade (Guloso)
+    # Calcula a razão valor/custo (média entre peso e volume) para cada item
+    itens_com_razao = []
+    for i, (peso, volume, valor) in enumerate(itens):
 
+        if peso > 0:
+            razao_peso = valor / peso
+        else:
+            razao_peso = 0
+
+        if volume > 0:
+            razao_volume = valor / peso
+        else:
+            razao_volume = 0
+
+        razao = (razao_peso + razao_volume) / 2
+
+        
+        # Guardamos o índice original 'i' para reconstruir a resposta depois
+        itens_com_razao.append((razao, i, peso, volume, valor))
+    
+    # Ordena do maior para o menor (reverse=True)
+    itens_com_razao.sort(reverse=True)
+    
+    # Cria a lista de itens reordenada e um mapa para recuperar os índices originais
+    itens_ordenados = []
+    mapa_indices = {}
+    
+    for novo_indice, (_, indice_original, peso, volume, valor) in enumerate(itens_com_razao):
+        itens_ordenados.append((peso, volume, valor))
+        mapa_indices[novo_indice] = indice_original
+    
+    # Substituímos a lista original pela ordenada para usar no algoritmo
+    itens = itens_ordenados
+    
+
+    # 1.1. SOLUÇÃO GULOSA (inicial)
+    melhor_valor, melhor_solucao = solucao_inicial(n, W, V, itens)
 
     # 2. INICIALIZAÇÃO DA BUSCA
     fila_prioridade = PriorityQueue()
     
-    # Cria o nó raiz (nível 0, vazio)
-    # Note que passamos a lista 'itens' (que já está ordenada)
+    # Cria o nó raiz (nível 0, vazio) passando a lista 'itens' (que já está ordenada)
     limite_raiz = calcular_limite(No(0, 0, 0, 0, 0, []), W, V, itens)
     raiz = No(0, 0, 0, 0, limite_raiz, [])
     
     fila_prioridade.put(raiz)
-    
-    # melhor_valor = 0
-    # melhor_solucao = []
     
     # 3. LOOP PRINCIPAL (Best-First Search)
     while not fila_prioridade.empty():
@@ -155,7 +158,7 @@ def mochila_bnb(W, V, itens):
         if no.limite < melhor_valor:
             continue
         
-        # Verifica se chegamos numa folha (todos itens processados) ou fim da linha
+        # Verifica se chegamos numa folha (todos itens processados) ou fim da linha, e compara as soluções
         if no.nivel == n:
             if no.valor > melhor_valor:
                 melhor_valor = no.valor
@@ -170,7 +173,7 @@ def mochila_bnb(W, V, itens):
             W, V, itens
         )
         
-        if limite_sem_item >= melhor_valor:
+        if limite_sem_item >= melhor_valor: # Verifica se é promissor
             no_sem_item = No(
                 no.nivel + 1,
                 no.peso,
@@ -195,7 +198,7 @@ def mochila_bnb(W, V, itens):
                 W, V, itens
             )
             
-            if limite_com_item >= melhor_valor:
+            if limite_com_item >= melhor_valor: # Verifica se é promissor
                 no_com_item = No(
                     no.nivel + 1,
                     novo_peso,

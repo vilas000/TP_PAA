@@ -26,27 +26,9 @@ python instance_generator.py
 ### **3. Avaliação Empírica Completa**
 ```bash
 python evaluator.py
-python analyze_results.py
+python analisar_resultados.py
 ```
 **Resultado:** Compara os 3 algoritmos em todas as instâncias e gera estatísticas.
-
----
-
-## 📁 Estrutura do Projeto
-
-```
-trabalho_paa/
-├── main.py                    ← Execução individual
-├── evaluator.py              ← Avaliação completa
-├── analyze_results.py         ← Análise estatística
-├── instance_generator.py      ← Gera instâncias de teste
-├── file_reader.py            ← Lê arquivos de entrada
-├── knapsack_dp.py            ← Algoritmo 1: Programação Dinâmica
-├── knapsack_backtracking.py  ← Algoritmo 2: Backtracking
-├── knapsack_bnb.py           ← Algoritmo 3: Branch-and-Bound
-├── exemplo.txt               ← Arquivo de exemplo
-└── README.md                 ← Documentação básica
-```
 
 ---
 
@@ -106,21 +88,13 @@ Tempo de execução: 0.000123 segundos
 - Gera `results.csv` com todos os resultados
 - Exibe estatísticas resumidas no terminal
 
-### **Análise (`analyze_results.py`):**
+### **Análise (`analisar_resultados.py`):**
 - Estatísticas por algoritmo (média, mediana, desvio padrão)
 - Análise por tamanho de instância
 - Verificação de consistência
 
 ---
 
-## ✅ O Que Foi Melhorado?
-
-1. **✅ Corrigido:** `file_reader.py` agora aceita espaços OU tabulações consistentemente
-2. **✅ Adicionado:** Tratamento de erros robusto (arquivo vazio, valores inválidos, etc.)
-3. **✅ Criado:** Documentação completa (`GUIA_COMPLETO.md`)
-4. **✅ Criado:** Lista de melhorias sugeridas (`MELHORIAS_SUGERIDAS.md`)
-
----
 
 ## 🎓 Para Entender o Comportamento Assintótico
 
@@ -135,7 +109,7 @@ Tempo de execução: 0.000123 segundos
 
 3. **Analise os resultados:**
    ```bash
-   python analyze_results.py
+   python analisar_resultados.py
    ```
 
 4. **Compare os tempos:**
@@ -149,7 +123,7 @@ Tempo de execução: 0.000123 segundos
 
 1. **Backtracking pode ser muito lento** para `n > 25`
 2. **DP pode consumir muita memória** se `W × V > 1.000.000`
-3. **Todos os algoritmos devem encontrar o mesmo valor máximo** (verifique com `analyze_results.py`)
+3. **Todos os algoritmos devem encontrar o mesmo valor máximo** (verifique com `analisar_resultados.py`)
 
 ---
 
@@ -167,7 +141,7 @@ Tempo de execução: 0.000123 segundos
 1. ✅ **Teste básico:** `python main.py exemplo.txt`
 2. ✅ **Gere instâncias:** `python instance_generator.py`
 3. ✅ **Execute avaliação:** `python evaluator.py`
-4. ✅ **Analise resultados:** `python analyze_results.py`
+4. ✅ **Analise resultados:** `python analisar_resultados.py`
 5. 📊 **Para melhorias:** Consulte `MELHORIAS_SUGERIDAS.md`
 
 ---
