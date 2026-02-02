@@ -4,7 +4,7 @@ Programa principal para resolver o Problema da Mochila 0-1.
 
 import sys
 
-from ferramentas.file_reader import read_instance
+from file_reader import read_instance
 from algoritmos.mochila_dp import mochila_dp
 from algoritmos.mochila_backtracking import mochila_backtracking
 from algoritmos.mochila_bnb import mochila_bnb

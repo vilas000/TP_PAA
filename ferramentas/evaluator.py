@@ -3,6 +3,13 @@ Script de avaliação empírica dos algoritmos.
 """
 
 import os
+import sys
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+# Adiciona a raiz ao sys.path para o Python encontrar 'algoritmos' e 'file_reader'
+sys.path.append(parent_dir)
+
 import csv
 import time
 from file_reader import read_instance

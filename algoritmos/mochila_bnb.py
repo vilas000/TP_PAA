@@ -30,38 +30,53 @@ def calcular_limite(no, W, V, itens):
     """
     if no.peso > W or no.volume > V: # Caso o peso e volume atuais naquele nó descumpram as restrições, interromper execução
         return 0
+
+    itens_restantes = itens[no.nivel:] # Pega os itens restantes a partir do nível atual
+
+    # --- CÁLCULO DO BOUND APENAS PARA O PESO (Relaxa Volume) ---
+    # Ordenar os itens restantes pela densidade de PESO (Valor / Peso)
+    # Lambda: Valor (x[2]) / Peso (x[0])
+    itens_restantes.sort(key=lambda x: x[2]/x[0] if x[0] > 0 else float('inf'), reverse=True)
     
-    limite = no.valor
+    bound_w = no.valor
     peso_atual = no.peso
+    
+    for p, v, val in itens_restantes:
+        if peso_atual + p <= W:
+            peso_atual += p
+            bound_w += val
+        else:
+            # Item não cabe inteiro, entao pegar fração baseada no PESO
+            espaco_livre = W - peso_atual
+            if p > 0:
+                fracao = espaco_livre / p
+                bound_w += val * fracao
+            break # Encheu o peso, para aqui
+
+
+    # --- CÁLCULO DO BOUND APENAS PARA O VOLUME (Relaxa Peso) ---
+    # Ordenar os itens restantes pela densidade de VOLUME (Valor / Volume)
+    # Lambda: Valor (x[2]) / Volume (x[1])
+    itens_restantes.sort(key=lambda x: x[2]/x[1] if x[1] > 0 else float('inf'), reverse=True)
+    
+    bound_v = no.valor
     volume_atual = no.volume
     
-    # Percorrer os itens restantes linearmente 
-    for i in range(no.nivel, len(itens)): 
-        peso_i, volume_i, valor_i = itens[i] # Peso, volume e valor do item i
-        
-        if peso_atual + peso_i <= W and volume_atual + volume_i <= V: # Verifica se o item cabe inteiro
-            peso_atual += peso_i
-            volume_atual += volume_i
-            limite += valor_i
-        else: # O item não cabe inteiro, então pegamos a fração permitida (Relaxamento Linear)
-            peso_disponivel = W - peso_atual
-            volume_disponivel = V - volume_atual
-            
-            if peso_i > 0 and volume_i > 0:
-                fracao_peso = peso_disponivel / peso_i
-                fracao_volume = volume_disponivel / volume_i
-                
-                # A fração é limitada pela restrição mais apertada (peso ou volume)
-                fracao = min(fracao_peso, fracao_volume)
-                
-                # Só soma se a fração for positiva
-                if fracao > 0:
-                    limite += valor_i * fracao
-            
-            # Na mochila fracionária, ao encher com uma fração, não cabe mais nada.
-            break
+    for p, v, val in itens_restantes:
+        if volume_atual + v <= V:
+            volume_atual += v
+            bound_v += val
+        else:
+            # Item não cabe inteiro, então pegar fração baseada no VOLUME
+            espaco_livre = V - volume_atual
+            if v > 0:
+                fracao = espaco_livre / v
+                bound_v += val * fracao
+            break # Encheu o volume, para aqui
+
+    # O Limite Verdadeiro é o MINIMO entre as duas restrições.
+    return min(bound_w, bound_v)
     
-    return limite
 
 def solucao_inicial(n, W, V, itens):
     peso_g = 0
@@ -112,7 +127,7 @@ def mochila_bnb(W, V, itens):
             razao_peso = 0
 
         if volume > 0:
-            razao_volume = valor / peso
+            razao_volume = valor / volume
         else:
             razao_volume = 0
 
