@@ -4,21 +4,21 @@ Implementação do Problema da Mochila 0-1 usando Programação Dinâmica.
 
 import time
 
-def mochila_dp(W, V, items): 
+def mochila_dp(W, V, itens): 
     """
     Realiza programação dinâmica utilizando tabela de histórico booleana.
     
     Args:
         W: Capacidade máxima de peso
         V: Capacidade máxima de volume
-        items: Lista de tuplas (peso, volume, valor)
+        itens: Lista de tuplas (peso, volume, valor)
         
     Returns:
         tuple: (valor_maximo, itens_selecionados, tempo_execucao)
     """
 
     start_time = time.time() # Início da medição de tempo 
-    n = len(items) # Número de itens
+    n = len(itens) # Número de itens
 
     # 1. Tabela DP (Apenas Valores Numéricos)
     # dp[w][v] = Melhor valor monetário possível com peso w e volume v
@@ -30,7 +30,7 @@ def mochila_dp(W, V, items):
 
     # --- PROCESSAMENTO ---
     for i in range(n):
-        peso_i, volume_i, valor_i = items[i] # Peso, volume e valor do item i
+        peso_i, volume_i, valor_i = itens[i] # Peso, volume e valor do item i
 
         # Loop Inverso (Peso e Volume)
         for w in range(W, peso_i - 1, -1):
@@ -61,7 +61,7 @@ def mochila_dp(W, V, items):
             itens_selecionados.append(i) # Salva o índice original, caso o item tenha sido escolhido (True na tabela de histórico).
             
             # Reduz a capacidade disponível, pois "devolvemos" o item
-            peso_i, volume_i, _ = items[i]
+            peso_i, volume_i, _ = itens[i]
             w_atual -= peso_i
             v_atual -= volume_i
 
